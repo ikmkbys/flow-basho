@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { collection, query, where, orderBy, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, orderBy, getDocs, deleteDoc, doc, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthButton from '@/components/AuthButton';
@@ -17,6 +17,14 @@ export default function MyShopsPage() {
   const { user, loading: authLoading } = useAuth();
   const [shops, setShops]   = useState<Shop[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // 新規登録フォーム
+  const [showForm, setShowForm]   = useState(false);
+  const [newName, setNewName]     = useState('');
+  const [newTabelog, setNewTabelog] = useState('');
+  const [newMaps, setNewMaps]     = useState('');
+  const [saving, setSaving]       = useState(false);
+  const [attempted, setAttempted] = useState(false);
 
   const fetchShops = async (uid: string) => {
     const q = query(
@@ -41,6 +49,30 @@ export default function MyShopsPage() {
     setShops(prev => prev.filter(s => s.id !== shopId));
   };
 
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAttempted(true);
+    if (!newName.trim() || !user) return;
+    setSaving(true);
+    try {
+      const docId = `${user.uid}_${encodeURIComponent(newName.trim())}`;
+      await setDoc(doc(db, 'shops', docId), {
+        name: newName.trim(),
+        ...(newTabelog.trim() ? { tabelogUrl: newTabelog.trim() } : {}),
+        ...(newMaps.trim()    ? { mapsUrl: newMaps.trim() }        : {}),
+        ownerUid: user.uid,
+        lastUsedAt: Timestamp.now(),
+        useCount: 1,
+      }, { merge: true });
+      setNewName(''); setNewTabelog(''); setNewMaps('');
+      setAttempted(false);
+      setShowForm(false);
+      await fetchShops(user.uid);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <>
       <header>
@@ -55,8 +87,48 @@ export default function MyShopsPage() {
       <main className="container" style={{ paddingTop: 40, paddingBottom: 60 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
           <Link href="/" className="btn btn-ghost btn-sm">← 戻る</Link>
-          <h1 style={{ fontSize: 22, fontWeight: 800 }}>過去のお店</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 800 }}>お店ライブラリ</h1>
+          {user && (
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              style={{ marginLeft: 'auto' }}
+              onClick={() => setShowForm(v => !v)}
+            >
+              {showForm ? '✕ キャンセル' : '＋ 新規登録'}
+            </button>
+          )}
         </div>
+
+        {showForm && user && (
+          <form onSubmit={handleRegister} noValidate className="card" style={{ marginBottom: 24 }}>
+            <p className="section-title">お店を登録</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label>店名 <span style={{ color: 'var(--red)' }}>*</span></label>
+                <input
+                  type="text"
+                  placeholder="例：焼き鳥 鳥一"
+                  value={newName}
+                  onChange={e => setNewName(e.target.value)}
+                  className={attempted && !newName.trim() ? 'input-error' : ''}
+                />
+                {attempted && !newName.trim() && <p className="error-msg">店名を入力してください</p>}
+              </div>
+              <div>
+                <label>食べログURL（任意）</label>
+                <input type="url" placeholder="https://tabelog.com/..." value={newTabelog} onChange={e => setNewTabelog(e.target.value)} />
+              </div>
+              <div>
+                <label>Google MapsなどのURL（任意）</label>
+                <input type="url" placeholder="https://maps.google.com/..." value={newMaps} onChange={e => setNewMaps(e.target.value)} />
+              </div>
+            </div>
+            <button type="submit" className="btn btn-primary" style={{ marginTop: 14, width: '100%', justifyContent: 'center' }} disabled={saving}>
+              {saving ? '登録中…' : '登録する'}
+            </button>
+          </form>
+        )}
 
         {authLoading || loading ? (
           <p style={{ color: 'var(--muted)' }}>読み込み中…</p>

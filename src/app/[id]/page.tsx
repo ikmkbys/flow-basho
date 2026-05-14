@@ -7,7 +7,9 @@ import {
   onSnapshot, orderBy, query, Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { useAuth } from '@/contexts/AuthContext';
 import AuthButton from '@/components/AuthButton';
+import ShopPicker from '@/components/ShopPicker';
 import type { BashoEvent, Candidate, VoteResponse, VoteValue } from '@/lib/types';
 
 function safeUrl(url?: string): string | undefined {
@@ -33,6 +35,7 @@ interface Props {
 
 export default function BashoPage({ params }: Props) {
   const { id } = use(params);
+  const { user } = useAuth();
 
   const [event, setEvent]         = useState<BashoEvent | null>(null);
   const [responses, setResponses] = useState<VoteResponse[]>([]);
@@ -51,6 +54,7 @@ export default function BashoPage({ params }: Props) {
 
   // 場所追加フォーム
   const [showAddForm, setShowAddForm]     = useState(false);
+  const [showShopPicker, setShowShopPicker] = useState(false);
   const [newName, setNewName]             = useState('');
   const [newTabelog, setNewTabelog]       = useState('');
   const [newMaps, setNewMaps]             = useState('');
@@ -168,6 +172,15 @@ export default function BashoPage({ params }: Props) {
     }
     setSubmitted(false);
     setAttempted(false);
+  };
+
+  // ライブラリからお店追加
+  const handleAddFromLibrary = async (partial: Omit<Candidate, 'id'>) => {
+    const newCandidate: Candidate = {
+      id: `c_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      ...partial,
+    };
+    await updateDoc(doc(db, 'basho', id), { candidates: arrayUnion(newCandidate) });
   };
 
   // お店追加
@@ -349,9 +362,16 @@ export default function BashoPage({ params }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <p className="section-title" style={{ marginBottom: 0 }}>候補の場所</p>
             {!isDeadlinePassed && (
-              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowAddForm(v => !v)}>
-                {showAddForm ? '✕ キャンセル' : '＋ お店を追加'}
-              </button>
+              <div style={{ display: 'flex', gap: 6 }}>
+                {user && (
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowShopPicker(true)}>
+                    📚 ライブラリから追加
+                  </button>
+                )}
+                <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowAddForm(v => !v)}>
+                  {showAddForm ? '✕ キャンセル' : '＋ 手入力で追加'}
+                </button>
+              </div>
             )}
           </div>
 
@@ -573,6 +593,14 @@ export default function BashoPage({ params }: Props) {
           </div>
         )}
       </main>
+
+      {showShopPicker && user && (
+        <ShopPicker
+          uid={user.uid}
+          onSelect={handleAddFromLibrary}
+          onClose={() => setShowShopPicker(false)}
+        />
+      )}
     </>
   );
 }
