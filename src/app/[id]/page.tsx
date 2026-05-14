@@ -65,6 +65,15 @@ export default function BashoPage({ params }: Props) {
   const [editDeadline, setEditDeadline]       = useState('');
   const [eventEditSubmitting, setEventEditSubmitting] = useState(false);
 
+  // localStorage から前回の投票IDを復元
+  useEffect(() => {
+    const stored = localStorage.getItem(`basho_vote_${id}`);
+    if (stored) {
+      setMyResponseId(stored);
+      setSubmitted(true);
+    }
+  }, [id]);
+
   // イベントリアルタイム購読
   useEffect(() => {
     const unsub = onSnapshot(doc(db, 'basho', id), snap => {
@@ -110,6 +119,7 @@ export default function BashoPage({ params }: Props) {
           answeredAt: Timestamp.now(),
         });
         setMyResponseId(ref.id);
+        localStorage.setItem(`basho_vote_${id}`, ref.id);
       }
       setSubmittedAsEdit(isEdit);
       setSubmitted(true);
@@ -119,6 +129,13 @@ export default function BashoPage({ params }: Props) {
   };
 
   const handleEditMyVote = () => {
+    if (myResponseId) {
+      const myResp = responses.find(r => r.id === myResponseId);
+      if (myResp) {
+        setRespName(myResp.respondentName);
+        setVotes(myResp.votes);
+      }
+    }
     setSubmitted(false);
     setAttempted(false);
   };
