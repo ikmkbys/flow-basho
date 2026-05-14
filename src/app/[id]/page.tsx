@@ -92,6 +92,18 @@ export default function BashoPage({ params }: Props) {
     });
   }, [id]);
 
+  // 自分の回答に含まれていない候補が増えたら自動で編集モードへ
+  useEffect(() => {
+    if (!submitted || !myResponseId || !event || responses.length === 0) return;
+    const myResp = responses.find(r => r.id === myResponseId);
+    if (!myResp) return;
+    if (event.candidates.some(c => !myResp.votes[c.id])) {
+      setRespName(myResp.respondentName);
+      setVotes(myResp.votes);
+      setSubmitted(false);
+    }
+  }, [submitted, myResponseId, event, responses]);
+
   const setVote = useCallback((candidateId: string, value: VoteValue) => {
     setVotes(prev => ({ ...prev, [candidateId]: value }));
   }, []);
