@@ -131,6 +131,7 @@ export default function HomePage() {
         <div className="header-inner">
           <a href="/" className="logo">FLOW BASHO<span>.</span></a>
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Link href="/my-shops" className="btn btn-ghost btn-sm" style={{ fontSize: 13 }}>📚 ライブラリ</Link>
             <a href="https://flow-yotei.stellars-lab.com" target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm" style={{ fontSize: 13 }}>
               日程調整はYOTEI
             </a>
