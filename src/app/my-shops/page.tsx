@@ -131,19 +131,22 @@ export default function MyShopsPage() {
       </header>
 
       <main className="container" style={{ paddingTop: 40, paddingBottom: 60 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
-          <Link href="/" className="btn btn-ghost btn-sm">← 戻る</Link>
-          <h1 style={{ fontSize: 22, fontWeight: 800 }}>お店ライブラリ</h1>
-          {user && (
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              style={{ marginLeft: 'auto' }}
-              onClick={() => setShowForm(v => !v)}
-            >
-              {showForm ? '✕ キャンセル' : '＋ 新規登録'}
-            </button>
-          )}
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 6 }}>
+            <Link href="/" className="btn btn-ghost btn-sm">← 戻る</Link>
+            <h1 style={{ fontSize: 22, fontWeight: 800 }}>お店ライブラリ</h1>
+            {user && (
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                style={{ marginLeft: 'auto' }}
+                onClick={() => setShowForm(v => !v)}
+              >
+                {showForm ? '✕ キャンセル' : '＋ 新規登録'}
+              </button>
+            )}
+          </div>
+          <p style={{ fontSize: 13, color: 'var(--muted)', paddingLeft: 4 }}>自分のアカウントに保存されているお店のリストです</p>
         </div>
 
         {showForm && user && (
