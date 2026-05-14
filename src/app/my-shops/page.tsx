@@ -19,12 +19,19 @@ export default function MyShopsPage() {
   const [loading, setLoading] = useState(true);
 
   // 新規登録フォーム
-  const [showForm, setShowForm]   = useState(false);
-  const [newName, setNewName]     = useState('');
+  const [showForm, setShowForm]     = useState(false);
+  const [newName, setNewName]       = useState('');
   const [newTabelog, setNewTabelog] = useState('');
-  const [newMaps, setNewMaps]     = useState('');
-  const [saving, setSaving]       = useState(false);
-  const [attempted, setAttempted] = useState(false);
+  const [newMaps, setNewMaps]       = useState('');
+  const [saving, setSaving]         = useState(false);
+  const [attempted, setAttempted]   = useState(false);
+
+  // 編集
+  const [editingId, setEditingId]       = useState<string | null>(null);
+  const [editName, setEditName]         = useState('');
+  const [editTabelog, setEditTabelog]   = useState('');
+  const [editMaps, setEditMaps]         = useState('');
+  const [editSaving, setEditSaving]     = useState(false);
 
   const fetchShops = async (uid: string) => {
     const q = query(
@@ -42,6 +49,40 @@ export default function MyShopsPage() {
     if (!user) { setLoading(false); return; }
     fetchShops(user.uid);
   }, [user, authLoading]);
+
+  const startEdit = (s: Shop) => {
+    setEditingId(s.id);
+    setEditName(s.name);
+    setEditTabelog(s.tabelogUrl ?? '');
+    setEditMaps(s.mapsUrl ?? '');
+  };
+
+  const handleEdit = async (original: Shop) => {
+    if (!editName.trim() || !user) return;
+    setEditSaving(true);
+    try {
+      const newDocId = `${user.uid}_${encodeURIComponent(editName.trim())}`;
+      const nameChanged = editName.trim() !== original.name;
+
+      await setDoc(doc(db, 'shops', newDocId), {
+        name: editName.trim(),
+        ...(editTabelog.trim() ? { tabelogUrl: editTabelog.trim() } : {}),
+        ...(editMaps.trim()    ? { mapsUrl: editMaps.trim() }        : {}),
+        ownerUid:   user.uid,
+        lastUsedAt: original.lastUsedAt,
+        useCount:   original.useCount,
+      });
+
+      if (nameChanged) {
+        await deleteDoc(doc(db, 'shops', original.id));
+      }
+
+      setEditingId(null);
+      await fetchShops(user.uid);
+    } finally {
+      setEditSaving(false);
+    }
+  };
 
   const handleDelete = async (shopId: string) => {
     if (!confirm('このお店を削除しますか？')) return;
@@ -145,22 +186,46 @@ export default function MyShopsPage() {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {shops.map(s => (
-              <div key={s.id} className="card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontWeight: 700, marginBottom: 4 }}>{s.name}</p>
-                  <div style={{ display: 'flex', gap: 10, fontSize: 12, color: 'var(--muted)' }}>
-                    <span>{s.useCount}回使用</span>
-                    {s.tabelogUrl && <a href={safeUrl(s.tabelogUrl)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>食べログ ↗</a>}
-                    {s.mapsUrl    && <a href={safeUrl(s.mapsUrl)}    target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>地図 ↗</a>}
+              <div key={s.id} className="card" style={{ padding: '16px 20px' }}>
+                {editingId === s.id ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    <div>
+                      <label>店名 <span style={{ color: 'var(--red)' }}>*</span></label>
+                      <input type="text" value={editName} onChange={e => setEditName(e.target.value)} />
+                    </div>
+                    <div>
+                      <label>食べログURL（任意）</label>
+                      <input type="url" placeholder="https://tabelog.com/..." value={editTabelog} onChange={e => setEditTabelog(e.target.value)} />
+                    </div>
+                    <div>
+                      <label>Google MapsなどのURL（任意）</label>
+                      <input type="url" placeholder="https://maps.google.com/..." value={editMaps} onChange={e => setEditMaps(e.target.value)} />
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                      <button type="button" className="btn btn-primary btn-sm" onClick={() => handleEdit(s)} disabled={editSaving} style={{ justifyContent: 'center' }}>
+                        {editSaving ? '保存中…' : '保存'}
+                      </button>
+                      <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditingId(null)}>
+                        キャンセル
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <button
-                  type="button"
-                  className="btn btn-danger btn-sm"
-                  onClick={() => handleDelete(s.id)}
-                >
-                  削除
-                </button>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ fontWeight: 700, marginBottom: 4 }}>{s.name}</p>
+                      <div style={{ display: 'flex', gap: 10, fontSize: 12, color: 'var(--muted)' }}>
+                        <span>{s.useCount}回使用</span>
+                        {s.tabelogUrl && <a href={safeUrl(s.tabelogUrl)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>食べログ ↗</a>}
+                        {s.mapsUrl    && <a href={safeUrl(s.mapsUrl)}    target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>地図 ↗</a>}
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button type="button" className="btn btn-secondary btn-sm" onClick={() => startEdit(s)}>編集</button>
+                      <button type="button" className="btn btn-danger btn-sm" onClick={() => handleDelete(s.id)}>削除</button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

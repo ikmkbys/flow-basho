@@ -200,7 +200,7 @@ export default function HomePage() {
                   className="btn btn-secondary btn-sm"
                   onClick={() => setShowPicker(true)}
                 >
-                  📚 過去のお店から追加
+                  📚 ライブラリから追加
                 </button>
               )}
             </div>
