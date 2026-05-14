@@ -92,6 +92,17 @@ export default function BashoPage({ params }: Props) {
     });
   }, [id]);
 
+  // 名前入力時に既存の回答を探して自動リンク（localStorage未記録の場合の救済）
+  useEffect(() => {
+    if (!respName.trim() || myResponseId || submitted) return;
+    const match = responses.find(r => r.respondentName === respName.trim());
+    if (match) {
+      setMyResponseId(match.id);
+      setVotes(match.votes);
+      localStorage.setItem(`basho_vote_${id}`, match.id);
+    }
+  }, [respName, responses, myResponseId, submitted, id]);
+
   // 自分の回答に含まれていない候補が増えたら自動で編集モードへ
   useEffect(() => {
     if (!submitted || !myResponseId || !event || responses.length === 0) return;
