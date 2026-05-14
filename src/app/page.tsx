@@ -111,7 +111,10 @@ export default function HomePage() {
       <header>
         <div className="header-inner">
           <span className="logo">🍻 FLOW BASHO</span>
-          <div style={{ marginLeft: 'auto' }}>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <a href="https://flow-yotei.stellars-lab.com" target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm" style={{ fontSize: 12 }}>
+              📅 日程調整はYOTEI
+            </a>
             <AuthButton />
           </div>
         </div>
