@@ -5,14 +5,16 @@ service cloud.firestore {
     match /basho/{id} {
       allow read: if true;
       allow create: if true;
-      allow update: if true;
+      // candidatesのみの変更は誰でもOK、それ以外はオーナーのみ
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['candidates'])
+        || (request.auth != null && request.auth.uid == resource.data.creatorUid);
       allow delete: if false;
     }
 
     match /basho/{id}/responses/{responseId} {
       allow read: if true;
       allow create: if true;
-      allow update: if false;
+      allow update: if true;
       allow delete: if false;
     }
 

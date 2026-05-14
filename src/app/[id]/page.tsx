@@ -10,6 +10,11 @@ import { db } from '@/lib/firebase';
 import AuthButton from '@/components/AuthButton';
 import type { BashoEvent, Candidate, VoteResponse, VoteValue } from '@/lib/types';
 
+function safeUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  return url.startsWith('https://') || url.startsWith('http://') ? url : undefined;
+}
+
 const VOTE_LABELS: Record<VoteValue, string> = {
   want: '🙆',
   ok:   '🤔',
@@ -379,8 +384,8 @@ export default function BashoPage({ params }: Props) {
                       {c.note && <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{c.note}</p>}
                     </div>
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', flexShrink: 0 }}>
-                      {c.tabelogUrl && <a href={c.tabelogUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">食べログ ↗</a>}
-                      {c.mapsUrl    && <a href={c.mapsUrl}    target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">地図 ↗</a>}
+                      {c.tabelogUrl && <a href={safeUrl(c.tabelogUrl)} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">食べログ ↗</a>}
+                      {c.mapsUrl    && <a href={safeUrl(c.mapsUrl)}    target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">地図 ↗</a>}
                       <button type="button" className="btn btn-ghost btn-sm" onClick={() => startEditCandidate(c)} title="編集">✏️</button>
                       <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleDeleteCandidate(c)} title="削除" style={{ color: 'var(--red)' }}>🗑️</button>
                     </div>
@@ -451,8 +456,8 @@ export default function BashoPage({ params }: Props) {
                         <p style={{ fontWeight: 600, fontSize: 14 }}>{c.name}</p>
                         {c.note && <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{c.note}</p>}
                       </div>
-                      {c.tabelogUrl && <a href={c.tabelogUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">食べログ ↗</a>}
-                      {c.mapsUrl    && <a href={c.mapsUrl}    target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">地図 ↗</a>}
+                      {c.tabelogUrl && <a href={safeUrl(c.tabelogUrl)} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">食べログ ↗</a>}
+                      {c.mapsUrl    && <a href={safeUrl(c.mapsUrl)}    target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">地図 ↗</a>}
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       {(['want', 'ok', 'pass'] as VoteValue[]).map(v => (

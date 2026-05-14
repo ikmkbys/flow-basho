@@ -8,6 +8,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import AuthButton from '@/components/AuthButton';
 import type { Shop } from '@/lib/types';
 
+function safeUrl(url?: string): string | undefined {
+  if (!url) return undefined;
+  return url.startsWith('https://') || url.startsWith('http://') ? url : undefined;
+}
+
 export default function MyShopsPage() {
   const { user, loading: authLoading } = useAuth();
   const [shops, setShops]   = useState<Shop[]>([]);
@@ -73,8 +78,8 @@ export default function MyShopsPage() {
                   <p style={{ fontWeight: 700, marginBottom: 4 }}>{s.name}</p>
                   <div style={{ display: 'flex', gap: 10, fontSize: 12, color: 'var(--muted)' }}>
                     <span>{s.useCount}回使用</span>
-                    {s.tabelogUrl && <a href={s.tabelogUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>食べログ ↗</a>}
-                    {s.mapsUrl    && <a href={s.mapsUrl}    target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>地図 ↗</a>}
+                    {s.tabelogUrl && <a href={safeUrl(s.tabelogUrl)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>食べログ ↗</a>}
+                    {s.mapsUrl    && <a href={safeUrl(s.mapsUrl)}    target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>地図 ↗</a>}
                   </div>
                 </div>
                 <button
