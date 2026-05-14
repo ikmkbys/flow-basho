@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { collection, addDoc, doc, setDoc, Timestamp } from 'firebase/firestore';
+import Link from 'next/link';
+import { collection, addDoc, doc, setDoc, getDocs, query, where, orderBy, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
 import { storage } from '@/lib/storage';
 import AuthButton from '@/components/AuthButton';
 import ShopPicker from '@/components/ShopPicker';
-import type { Candidate } from '@/lib/types';
+import type { Candidate, BashoEvent } from '@/lib/types';
 
 type CandidateForm = Omit<Candidate, 'id'> & { _id: string };
 
@@ -30,6 +31,23 @@ export default function HomePage() {
   const [submitting, setSubmitting] = useState(false);
   const [attempted, setAttempted]   = useState(false);
   const [showPicker, setShowPicker] = useState(false);
+  const [pastEvents, setPastEvents] = useState<BashoEvent[]>([]);
+  const [pastLoading, setPastLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user) { setPastEvents([]); return; }
+    setPastLoading(true);
+    (async () => {
+      const q = query(
+        collection(db, 'basho'),
+        where('creatorUid', '==', user.uid),
+        orderBy('createdAt', 'desc'),
+      );
+      const snap = await getDocs(q);
+      setPastEvents(snap.docs.map(d => ({ id: d.id, ...d.data() }) as BashoEvent));
+      setPastLoading(false);
+    })();
+  }, [user]);
 
   const updateCandidate = useCallback((id: string, field: keyof Omit<Candidate, 'id'>, value: string) => {
     setCandidates(prev => prev.map(c => c._id === id ? { ...c, [field]: value } : c));
@@ -247,6 +265,37 @@ export default function HomePage() {
           </button>
         </form>
       </main>
+
+      {user && (
+        <div style={{ marginTop: 48 }}>
+          <hr className="divider" />
+          <p className="section-title" style={{ marginBottom: 16 }}>過去の投票</p>
+          {pastLoading && <p style={{ color: 'var(--muted)', fontSize: 14 }}>読み込み中…</p>}
+          {!pastLoading && pastEvents.length === 0 && (
+            <p style={{ color: 'var(--muted)', fontSize: 14 }}>まだ投票を作成していません</p>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {pastEvents.map(e => (
+              <Link
+                key={e.id}
+                href={`/${e.id}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 10, textDecoration: 'none', background: 'var(--bg)', transition: 'background 0.1s' }}
+                onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--bg2)')}
+                onMouseLeave={ev => (ev.currentTarget.style.background = 'var(--bg)')}
+              >
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontWeight: 600, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>{e.title}</p>
+                  <p style={{ fontSize: 12, color: 'var(--muted)' }}>
+                    {e.candidates.length}件の候補　·
+                    {e.createdAt?.toDate?.().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' }) ?? ''}
+                  </p>
+                </div>
+                <span style={{ fontSize: 12, color: 'var(--indigo)' }}>開く →</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {showPicker && user && (
         <ShopPicker
