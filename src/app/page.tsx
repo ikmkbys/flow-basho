@@ -264,38 +264,38 @@ export default function HomePage() {
             {submitting ? '作成中…' : '投票ページを作成する'}
           </button>
         </form>
-      </main>
 
-      {user && (
-        <div style={{ marginTop: 48 }}>
-          <hr className="divider" />
-          <p className="section-title" style={{ marginBottom: 16 }}>過去の投票</p>
-          {pastLoading && <p style={{ color: 'var(--muted)', fontSize: 14 }}>読み込み中…</p>}
-          {!pastLoading && pastEvents.length === 0 && (
-            <p style={{ color: 'var(--muted)', fontSize: 14 }}>まだ投票を作成していません</p>
-          )}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            {pastEvents.map(e => (
-              <Link
-                key={e.id}
-                href={`/${e.id}`}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 10, textDecoration: 'none', background: 'var(--bg)', transition: 'background 0.1s' }}
-                onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--bg2)')}
-                onMouseLeave={ev => (ev.currentTarget.style.background = 'var(--bg)')}
-              >
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontWeight: 600, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>{e.title}</p>
-                  <p style={{ fontSize: 12, color: 'var(--muted)' }}>
-                    {e.candidates.length}件の候補　·
-                    {e.createdAt?.toDate?.().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' }) ?? ''}
-                  </p>
-                </div>
-                <span style={{ fontSize: 12, color: 'var(--indigo)' }}>開く →</span>
-              </Link>
-            ))}
+        {user && (
+          <div style={{ marginTop: 48 }}>
+            <hr className="divider" />
+            <p className="section-title" style={{ marginBottom: 16 }}>過去の投票</p>
+            {pastLoading && <p style={{ color: 'var(--muted)', fontSize: 14 }}>読み込み中…</p>}
+            {!pastLoading && pastEvents.length === 0 && (
+              <p style={{ color: 'var(--muted)', fontSize: 14 }}>まだ投票を作成していません</p>
+            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {pastEvents.map(e => (
+                <Link
+                  key={e.id}
+                  href={`/${e.id}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', border: '1.5px solid var(--border)', borderRadius: 10, textDecoration: 'none', background: 'var(--bg)', transition: 'background 0.1s' }}
+                  onMouseEnter={ev => (ev.currentTarget.style.background = 'var(--bg2)')}
+                  onMouseLeave={ev => (ev.currentTarget.style.background = 'var(--bg)')}
+                >
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontWeight: 600, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>{e.title}</p>
+                    <p style={{ fontSize: 12, color: 'var(--muted)' }}>
+                      {e.candidates.length}件の候補　·
+                      {e.createdAt?.toDate?.().toLocaleDateString('ja-JP', { month: 'long', day: 'numeric' }) ?? ''}
+                    </p>
+                  </div>
+                  <span style={{ fontSize: 12, color: 'var(--indigo)' }}>開く →</span>
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </main>
 
       {showPicker && user && (
         <ShopPicker
