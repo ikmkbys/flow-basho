@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback, use } from 'react';
 import Link from 'next/link';
 import {
-  doc, getDoc, collection, addDoc, onSnapshot, orderBy, query, Timestamp,
+  doc, collection, addDoc, updateDoc, arrayUnion,
+  onSnapshot, orderBy, query, Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import AuthButton from '@/components/AuthButton';
@@ -40,14 +41,21 @@ export default function BashoPage({ params }: Props) {
   const [attempted, setAttempted]   = useState(false);
   const [copied, setCopied]         = useState(false);
 
-  // イベント取得
+  const [showAddForm, setShowAddForm]     = useState(false);
+  const [newName, setNewName]             = useState('');
+  const [newTabelog, setNewTabelog]       = useState('');
+  const [newMaps, setNewMaps]             = useState('');
+  const [addSubmitting, setAddSubmitting] = useState(false);
+  const [addAttempted, setAddAttempted]   = useState(false);
+
+  // イベントをリアルタイム購読（候補追加が即反映されるように）
   useEffect(() => {
-    (async () => {
-      const snap = await getDoc(doc(db, 'basho', id));
+    const unsub = onSnapshot(doc(db, 'basho', id), snap => {
       if (!snap.exists()) { setNotFound(true); setLoading(false); return; }
       setEvent({ id: snap.id, ...snap.data() } as BashoEvent);
       setLoading(false);
-    })();
+    });
+    return unsub;
   }, [id]);
 
   // 回答リアルタイム購読
@@ -81,6 +89,28 @@ export default function BashoPage({ params }: Props) {
       setSubmitted(true);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleAddCandidate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddAttempted(true);
+    if (!newName.trim()) return;
+
+    setAddSubmitting(true);
+    try {
+      const newCandidate = {
+        id: `c_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+        name: newName.trim(),
+        ...(newTabelog.trim() ? { tabelogUrl: newTabelog.trim() } : {}),
+        ...(newMaps.trim()    ? { mapsUrl: newMaps.trim() }        : {}),
+      };
+      await updateDoc(doc(db, 'basho', id), { candidates: arrayUnion(newCandidate) });
+      setNewName(''); setNewTabelog(''); setNewMaps('');
+      setAddAttempted(false);
+      setShowAddForm(false);
+    } finally {
+      setAddSubmitting(false);
     }
   };
 
@@ -147,7 +177,14 @@ export default function BashoPage({ params }: Props) {
 
         {/* 候補一覧 */}
         <div className="card" style={{ marginBottom: 28 }}>
-          <p className="section-title">候補のお店</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <p className="section-title" style={{ marginBottom: 0 }}>候補のお店</p>
+            {!isDeadlinePassed && (
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowAddForm(v => !v)}>
+                {showAddForm ? '✕ キャンセル' : '＋ お店を追加'}
+              </button>
+            )}
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {event.candidates.map(c => (
               <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -167,6 +204,35 @@ export default function BashoPage({ params }: Props) {
               </div>
             ))}
           </div>
+
+          {showAddForm && (
+            <form onSubmit={handleAddCandidate} noValidate style={{ marginTop: 16, borderTop: '1.5px solid var(--border)', paddingTop: 16 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div>
+                  <label>店名 <span style={{ color: 'var(--red)' }}>*</span></label>
+                  <input
+                    type="text"
+                    placeholder="例：焼き鳥 鳥一"
+                    value={newName}
+                    onChange={e => setNewName(e.target.value)}
+                    className={addAttempted && !newName.trim() ? 'input-error' : ''}
+                  />
+                  {addAttempted && !newName.trim() && <p className="error-msg">店名を入力してください</p>}
+                </div>
+                <div>
+                  <label>食べログURL（任意）</label>
+                  <input type="url" placeholder="https://tabelog.com/..." value={newTabelog} onChange={e => setNewTabelog(e.target.value)} />
+                </div>
+                <div>
+                  <label>Google MapsなどのURL（任意）</label>
+                  <input type="url" placeholder="https://maps.google.com/..." value={newMaps} onChange={e => setNewMaps(e.target.value)} />
+                </div>
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ marginTop: 12, width: '100%' }} disabled={addSubmitting}>
+                {addSubmitting ? '追加中…' : 'お店を追加する'}
+              </button>
+            </form>
+          )}
         </div>
 
         {/* 投票フォーム */}
