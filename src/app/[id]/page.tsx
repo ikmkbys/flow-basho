@@ -256,7 +256,11 @@ export default function BashoPage({ params }: Props) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {event.candidates.map(c => (
                   <div key={c.id}>
-                    <p style={{ fontWeight: 600, marginBottom: 8, fontSize: 14 }}>{c.name}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                      <p style={{ fontWeight: 600, fontSize: 14, flex: 1 }}>{c.name}</p>
+                      {c.tabelogUrl && <a href={c.tabelogUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">食べログ ↗</a>}
+                      {c.mapsUrl    && <a href={c.mapsUrl}    target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">地図 ↗</a>}
+                    </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       {(['want', 'ok', 'pass'] as VoteValue[]).map(v => (
                         <button
