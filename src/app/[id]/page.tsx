@@ -500,7 +500,19 @@ export default function BashoPage({ params }: Props) {
                 <tbody>
                   {responses.map(r => (
                     <tr key={r.id}>
-                      <td style={{ textAlign: 'left', fontWeight: 600 }}>{r.respondentName}</td>
+                      <td style={{ textAlign: 'left', fontWeight: 600 }}>
+                        <span>{r.respondentName}</span>
+                        {r.id === myResponseId && (
+                          <button
+                            type="button"
+                            className="btn btn-ghost btn-sm"
+                            onClick={handleEditMyVote}
+                            style={{ marginLeft: 6, fontSize: 11, padding: '1px 6px', color: 'var(--indigo)' }}
+                          >
+                            訂正
+                          </button>
+                        )}
+                      </td>
                       {event.candidates.map(c => {
                         const v = r.votes[c.id] as VoteValue | undefined;
                         return (
