@@ -276,10 +276,10 @@ export default function BashoPage({ params }: Props) {
     <>
       <header>
         <div className="header-inner">
-          <Link href="/" className="logo">🍻 FLOW BASHO</Link>
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <a href="https://flow-yotei.stellars-lab.com" target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm" style={{ fontSize: 12 }}>
-              📅 日程調整はYOTEI
+          <Link href="/" className="logo">FLOW BASHO<span>.</span></Link>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <a href="https://flow-yotei.stellars-lab.com" target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm" style={{ fontSize: 13 }}>
+              日程調整はYOTEI
             </a>
             <AuthButton />
           </div>

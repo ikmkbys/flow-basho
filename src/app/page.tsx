@@ -128,10 +128,10 @@ export default function HomePage() {
     <>
       <header>
         <div className="header-inner">
-          <span className="logo">🍻 FLOW BASHO</span>
-          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <a href="https://flow-yotei.stellars-lab.com" target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm" style={{ fontSize: 12 }}>
-              📅 日程調整はYOTEI
+          <a href="/" className="logo">FLOW BASHO<span>.</span></a>
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <a href="https://flow-yotei.stellars-lab.com" target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm" style={{ fontSize: 13 }}>
+              日程調整はYOTEI
             </a>
             <AuthButton />
           </div>
@@ -139,9 +139,14 @@ export default function HomePage() {
       </header>
 
       <main className="container" style={{ paddingTop: 40, paddingBottom: 60 }}>
-        <div style={{ marginBottom: 32 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 8 }}>飲み会の場所を投票で決めよう</h1>
-          <p style={{ color: 'var(--muted)', fontSize: 14 }}>候補のお店を登録してURLをシェア。みんなの「行きたい」を集めます。</p>
+        <div style={{ marginBottom: 32, textAlign: 'center' }}>
+          <span className="tag" style={{ marginBottom: 12, display: 'inline-block' }}>場所投票ツール</span>
+          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 8 }}>
+            飲み会の場所を、<br />みんなで決めよう。
+          </h1>
+          <p style={{ color: 'var(--muted)', fontSize: 15 }}>
+            候補のお店を登録してURLをシェア。みんなの「行きたい」を集めます。
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
