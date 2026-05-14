@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, use } from 'react';
 import Link from 'next/link';
 import {
-  doc, collection, addDoc, updateDoc, arrayUnion, arrayRemove,
+  doc, collection, addDoc, updateDoc, setDoc, arrayUnion, arrayRemove,
   onSnapshot, orderBy, query, Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -55,6 +55,9 @@ export default function BashoPage({ params }: Props) {
   // 場所追加フォーム
   const [showAddForm, setShowAddForm]     = useState(false);
   const [showShopPicker, setShowShopPicker] = useState(false);
+
+  // ライブラリ保存済みの候補ID（セッション内のフィードバック用）
+  const [savedToLibrary, setSavedToLibrary] = useState<Set<string>>(new Set());
   const [newName, setNewName]             = useState('');
   const [newTabelog, setNewTabelog]       = useState('');
   const [newMaps, setNewMaps]             = useState('');
@@ -172,6 +175,21 @@ export default function BashoPage({ params }: Props) {
     }
     setSubmitted(false);
     setAttempted(false);
+  };
+
+  // 候補をマイライブラリに保存
+  const handleSaveToLibrary = async (c: Candidate) => {
+    if (!user) return;
+    const docId = `${user.uid}_${encodeURIComponent(c.name)}`;
+    await setDoc(doc(db, 'shops', docId), {
+      name: c.name,
+      ...(c.tabelogUrl ? { tabelogUrl: c.tabelogUrl } : {}),
+      ...(c.mapsUrl    ? { mapsUrl: c.mapsUrl }        : {}),
+      ownerUid:   user.uid,
+      lastUsedAt: Timestamp.now(),
+      useCount:   1,
+    }, { merge: true });
+    setSavedToLibrary(prev => new Set(prev).add(c.id));
   };
 
   // ライブラリからお店追加
@@ -406,6 +424,18 @@ export default function BashoPage({ params }: Props) {
                     <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', flexShrink: 0 }}>
                       {c.tabelogUrl && <a href={safeUrl(c.tabelogUrl)} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">食べログ ↗</a>}
                       {c.mapsUrl    && <a href={safeUrl(c.mapsUrl)}    target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">地図 ↗</a>}
+                      {user && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => handleSaveToLibrary(c)}
+                          disabled={savedToLibrary.has(c.id)}
+                          title="マイライブラリに保存"
+                          style={savedToLibrary.has(c.id) ? { color: 'var(--muted)' } : {}}
+                        >
+                          {savedToLibrary.has(c.id) ? '📚 保存済み' : '📚 保存'}
+                        </button>
+                      )}
                       <button type="button" className="btn btn-ghost btn-sm" onClick={() => startEditCandidate(c)} title="編集">✏️</button>
                       <button type="button" className="btn btn-ghost btn-sm" onClick={() => handleDeleteCandidate(c)} title="削除" style={{ color: 'var(--red)' }}>🗑️</button>
                     </div>
