@@ -42,6 +42,7 @@ export default function BashoPage({ params }: Props) {
   const [myResponseId, setMyResponseId] = useState<string | null>(null);
   const [attempted, setAttempted]     = useState(false);
   const [copied, setCopied]           = useState(false);
+  const [submittedAsEdit, setSubmittedAsEdit] = useState(false);
 
   // お店追加フォーム
   const [showAddForm, setShowAddForm]     = useState(false);
@@ -93,6 +94,7 @@ export default function BashoPage({ params }: Props) {
     if (!respName.trim() || !event) return;
     if (!event.candidates.every(c => votes[c.id])) return;
 
+    const isEdit = !!myResponseId;
     setSubmitting(true);
     try {
       if (myResponseId) {
@@ -109,6 +111,7 @@ export default function BashoPage({ params }: Props) {
         });
         setMyResponseId(ref.id);
       }
+      setSubmittedAsEdit(isEdit);
       setSubmitted(true);
     } finally {
       setSubmitting(false);
@@ -433,7 +436,7 @@ export default function BashoPage({ params }: Props) {
           <div className="card" style={{ marginBottom: 28, textAlign: 'center' }}>
             <p style={{ fontSize: 32, marginBottom: 8 }}>🎉</p>
             <p style={{ fontWeight: 700, marginBottom: 4 }}>
-              {myResponseId ? '投票を修正しました！' : '投票ありがとうございます！'}
+              {submittedAsEdit ? '投票を修正しました！' : '投票ありがとうございます！'}
             </p>
             <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 16 }}>下の集計でみんなの結果を確認できます</p>
             <button type="button" className="btn btn-secondary btn-sm" onClick={handleEditMyVote} style={{ margin: '0 auto' }}>
