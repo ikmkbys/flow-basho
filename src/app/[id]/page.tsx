@@ -185,6 +185,7 @@ export default function BashoPage({ params }: Props) {
       name: c.name,
       ...(c.tabelogUrl ? { tabelogUrl: c.tabelogUrl } : {}),
       ...(c.mapsUrl    ? { mapsUrl: c.mapsUrl }        : {}),
+      ...(c.note       ? { note: c.note }              : {}),
       ownerUid:   user.uid,
       lastUsedAt: Timestamp.now(),
       useCount:   1,

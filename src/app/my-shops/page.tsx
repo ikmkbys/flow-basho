@@ -23,6 +23,7 @@ export default function MyShopsPage() {
   const [newName, setNewName]       = useState('');
   const [newTabelog, setNewTabelog] = useState('');
   const [newMaps, setNewMaps]       = useState('');
+  const [newNote, setNewNote]       = useState('');
   const [saving, setSaving]         = useState(false);
   const [attempted, setAttempted]   = useState(false);
 
@@ -31,6 +32,7 @@ export default function MyShopsPage() {
   const [editName, setEditName]         = useState('');
   const [editTabelog, setEditTabelog]   = useState('');
   const [editMaps, setEditMaps]         = useState('');
+  const [editNote, setEditNote]         = useState('');
   const [editSaving, setEditSaving]     = useState(false);
 
   const fetchShops = async (uid: string) => {
@@ -55,6 +57,7 @@ export default function MyShopsPage() {
     setEditName(s.name);
     setEditTabelog(s.tabelogUrl ?? '');
     setEditMaps(s.mapsUrl ?? '');
+    setEditNote(s.note ?? '');
   };
 
   const handleEdit = async (original: Shop) => {
@@ -68,6 +71,7 @@ export default function MyShopsPage() {
         name: editName.trim(),
         ...(editTabelog.trim() ? { tabelogUrl: editTabelog.trim() } : {}),
         ...(editMaps.trim()    ? { mapsUrl: editMaps.trim() }        : {}),
+        ...(editNote.trim()    ? { note: editNote.trim() }           : {}),
         ownerUid:   user.uid,
         lastUsedAt: original.lastUsedAt,
         useCount:   original.useCount,
@@ -101,11 +105,12 @@ export default function MyShopsPage() {
         name: newName.trim(),
         ...(newTabelog.trim() ? { tabelogUrl: newTabelog.trim() } : {}),
         ...(newMaps.trim()    ? { mapsUrl: newMaps.trim() }        : {}),
+        ...(newNote.trim()    ? { note: newNote.trim() }           : {}),
         ownerUid: user.uid,
         lastUsedAt: Timestamp.now(),
         useCount: 1,
       }, { merge: true });
-      setNewName(''); setNewTabelog(''); setNewMaps('');
+      setNewName(''); setNewTabelog(''); setNewMaps(''); setNewNote('');
       setAttempted(false);
       setShowForm(false);
       await fetchShops(user.uid);
@@ -164,6 +169,10 @@ export default function MyShopsPage() {
                 <label>Google MapsなどのURL（任意）</label>
                 <input type="url" placeholder="https://maps.google.com/..." value={newMaps} onChange={e => setNewMaps(e.target.value)} />
               </div>
+              <div>
+                <label>備考（任意）</label>
+                <input type="text" placeholder="例：予算3,000円、駅から徒歩5分" value={newNote} onChange={e => setNewNote(e.target.value)} />
+              </div>
             </div>
             <button type="submit" className="btn btn-primary" style={{ marginTop: 14, width: '100%', justifyContent: 'center' }} disabled={saving}>
               {saving ? '登録中…' : '登録する'}
@@ -201,6 +210,10 @@ export default function MyShopsPage() {
                       <label>Google MapsなどのURL（任意）</label>
                       <input type="url" placeholder="https://maps.google.com/..." value={editMaps} onChange={e => setEditMaps(e.target.value)} />
                     </div>
+                    <div>
+                      <label>備考（任意）</label>
+                      <input type="text" placeholder="例：予算3,000円、駅から徒歩5分" value={editNote} onChange={e => setEditNote(e.target.value)} />
+                    </div>
                     <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
                       <button type="button" className="btn btn-primary btn-sm" onClick={() => handleEdit(s)} disabled={editSaving} style={{ justifyContent: 'center' }}>
                         {editSaving ? '保存中…' : '保存'}
@@ -214,6 +227,7 @@ export default function MyShopsPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <div style={{ flex: 1 }}>
                       <p style={{ fontWeight: 700, marginBottom: 4 }}>{s.name}</p>
+                      {s.note && <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 4 }}>{s.note}</p>}
                       <div style={{ display: 'flex', gap: 10, fontSize: 12, color: 'var(--muted)' }}>
                         <span>{s.useCount}回使用</span>
                         {s.tabelogUrl && <a href={safeUrl(s.tabelogUrl)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--indigo)' }}>食べログ ↗</a>}

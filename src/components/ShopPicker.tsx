@@ -71,7 +71,7 @@ export default function ShopPicker({ uid, onSelect, onClose }: Props) {
               type="button"
               className="btn btn-secondary"
               style={{ justifyContent: 'flex-start', textAlign: 'left', flexDirection: 'column', alignItems: 'flex-start', gap: 2, padding: '10px 14px' }}
-              onClick={() => { onSelect({ name: shop.name, tabelogUrl: shop.tabelogUrl, mapsUrl: shop.mapsUrl }); onClose(); }}
+              onClick={() => { onSelect({ name: shop.name, tabelogUrl: shop.tabelogUrl, mapsUrl: shop.mapsUrl, note: shop.note }); onClose(); }}
             >
               <span style={{ fontWeight: 600 }}>{shop.name}</span>
               <span style={{ fontSize: 11, color: 'var(--muted)' }}>{shop.useCount}回使用</span>

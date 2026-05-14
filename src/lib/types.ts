@@ -32,6 +32,7 @@ export interface Shop {
   name: string;
   tabelogUrl?: string;
   mapsUrl?: string;
+  note?: string;
   ownerUid: string;
   lastUsedAt: Timestamp;
   useCount: number;
