@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import Providers from '@/components/Providers';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import Footer from '@/components/Footer';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -19,9 +20,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className={inter.className}>
-      <body className="min-h-screen">
+      <body className="min-h-screen" style={{ display: 'flex', flexDirection: 'column' }}>
         <Providers>
-          <ErrorBoundary>{children}</ErrorBoundary>
+          <ErrorBoundary>
+            <div style={{ flex: 1 }}>{children}</div>
+          </ErrorBoundary>
+          <Footer />
         </Providers>
         <Analytics />
       </body>
