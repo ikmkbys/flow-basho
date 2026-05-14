@@ -5,6 +5,7 @@ export interface Candidate {
   name: string;
   tabelogUrl?: string;
   mapsUrl?: string;
+  note?: string;
 }
 
 export interface BashoEvent {

@@ -44,11 +44,12 @@ export default function BashoPage({ params }: Props) {
   const [copied, setCopied]           = useState(false);
   const [submittedAsEdit, setSubmittedAsEdit] = useState(false);
 
-  // お店追加フォーム
+  // 場所追加フォーム
   const [showAddForm, setShowAddForm]     = useState(false);
   const [newName, setNewName]             = useState('');
   const [newTabelog, setNewTabelog]       = useState('');
   const [newMaps, setNewMaps]             = useState('');
+  const [newNote, setNewNote]             = useState('');
   const [addSubmitting, setAddSubmitting] = useState(false);
   const [addAttempted, setAddAttempted]   = useState(false);
 
@@ -57,6 +58,7 @@ export default function BashoPage({ params }: Props) {
   const [editName, setEditName]         = useState('');
   const [editTabelog, setEditTabelog]   = useState('');
   const [editMaps, setEditMaps]         = useState('');
+  const [editNote, setEditNote]         = useState('');
   const [editSubmitting, setEditSubmitting] = useState(false);
 
   // イベント編集
@@ -175,9 +177,10 @@ export default function BashoPage({ params }: Props) {
         name: newName.trim(),
         ...(newTabelog.trim() ? { tabelogUrl: newTabelog.trim() } : {}),
         ...(newMaps.trim()    ? { mapsUrl: newMaps.trim() }        : {}),
+        ...(newNote.trim()    ? { note: newNote.trim() }           : {}),
       };
       await updateDoc(doc(db, 'basho', id), { candidates: arrayUnion(newCandidate) });
-      setNewName(''); setNewTabelog(''); setNewMaps('');
+      setNewName(''); setNewTabelog(''); setNewMaps(''); setNewNote('');
       setAddAttempted(false);
       setShowAddForm(false);
     } finally {
@@ -191,12 +194,13 @@ export default function BashoPage({ params }: Props) {
     await updateDoc(doc(db, 'basho', id), { candidates: arrayRemove(candidate) });
   };
 
-  // お店編集開始
+  // 場所編集開始
   const startEditCandidate = (c: Candidate) => {
     setEditingId(c.id);
     setEditName(c.name);
     setEditTabelog(c.tabelogUrl ?? '');
     setEditMaps(c.mapsUrl ?? '');
+    setEditNote(c.note ?? '');
   };
 
   // お店編集保存
@@ -209,6 +213,7 @@ export default function BashoPage({ params }: Props) {
         name: editName.trim(),
         ...(editTabelog.trim() ? { tabelogUrl: editTabelog.trim() } : {}),
         ...(editMaps.trim()    ? { mapsUrl: editMaps.trim() }        : {}),
+        ...(editNote.trim()    ? { note: editNote.trim() }           : {}),
       };
       if (!event) return;
       const newCandidates = event.candidates.map(c => c.id === original.id ? updated : c);
@@ -337,7 +342,7 @@ export default function BashoPage({ params }: Props) {
         {/* 候補のお店 */}
         <div className="card" style={{ marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <p className="section-title" style={{ marginBottom: 0 }}>候補のお店</p>
+            <p className="section-title" style={{ marginBottom: 0 }}>候補の場所</p>
             {!isDeadlinePassed && (
               <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowAddForm(v => !v)}>
                 {showAddForm ? '✕ キャンセル' : '＋ お店を追加'}
@@ -352,9 +357,10 @@ export default function BashoPage({ params }: Props) {
                   /* 編集フォーム */
                   <div style={{ border: '1.5px solid var(--indigo)', borderRadius: 10, padding: 14 }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
-                      <input type="text" placeholder="店名" value={editName} onChange={e => setEditName(e.target.value)} />
+                      <input type="text" placeholder="場所名" value={editName} onChange={e => setEditName(e.target.value)} />
                       <input type="url" placeholder="食べログURL（任意）" value={editTabelog} onChange={e => setEditTabelog(e.target.value)} />
                       <input type="url" placeholder="地図URL（任意）" value={editMaps} onChange={e => setEditMaps(e.target.value)} />
+                      <input type="text" placeholder="備考（任意）" value={editNote} onChange={e => setEditNote(e.target.value)} />
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
                       <button type="button" className="btn btn-primary btn-sm" onClick={() => handleEditCandidate(c)} disabled={editSubmitting} style={{ justifyContent: 'center' }}>
@@ -367,9 +373,12 @@ export default function BashoPage({ params }: Props) {
                   </div>
                 ) : (
                   /* 通常表示 */
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontWeight: 600, flex: 1 }}>{c.name}</span>
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                    <div style={{ flex: 1 }}>
+                      <span style={{ fontWeight: 600 }}>{c.name}</span>
+                      {c.note && <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{c.note}</p>}
+                    </div>
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', flexShrink: 0 }}>
                       {c.tabelogUrl && <a href={c.tabelogUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">食べログ ↗</a>}
                       {c.mapsUrl    && <a href={c.mapsUrl}    target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">地図 ↗</a>}
                       <button type="button" className="btn btn-ghost btn-sm" onClick={() => startEditCandidate(c)} title="編集">✏️</button>
@@ -404,9 +413,13 @@ export default function BashoPage({ params }: Props) {
                   <label>地図URL（任意）</label>
                   <input type="url" placeholder="https://maps.google.com/..." value={newMaps} onChange={e => setNewMaps(e.target.value)} />
                 </div>
+                <div>
+                  <label>備考（任意）</label>
+                  <input type="text" placeholder="例：予算3,000円、駅から徒歩5分" value={newNote} onChange={e => setNewNote(e.target.value)} />
+                </div>
               </div>
               <button type="submit" className="btn btn-primary" style={{ marginTop: 12, width: '100%', justifyContent: 'center' }} disabled={addSubmitting}>
-                {addSubmitting ? '追加中…' : 'お店を追加する'}
+                {addSubmitting ? '追加中…' : '場所を追加する'}
               </button>
             </form>
           )}
@@ -433,8 +446,11 @@ export default function BashoPage({ params }: Props) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {event.candidates.map(c => (
                   <div key={c.id}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-                      <p style={{ fontWeight: 600, fontSize: 14, flex: 1 }}>{c.name}</p>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ fontWeight: 600, fontSize: 14 }}>{c.name}</p>
+                        {c.note && <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>{c.note}</p>}
+                      </div>
                       {c.tabelogUrl && <a href={c.tabelogUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">食べログ ↗</a>}
                       {c.mapsUrl    && <a href={c.mapsUrl}    target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">地図 ↗</a>}
                     </div>

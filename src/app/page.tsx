@@ -79,6 +79,7 @@ export default function HomePage() {
         name: c.name.trim(),
         ...(c.tabelogUrl?.trim() ? { tabelogUrl: c.tabelogUrl.trim() } : {}),
         ...(c.mapsUrl?.trim()    ? { mapsUrl: c.mapsUrl.trim() }        : {}),
+        ...(c.note?.trim()       ? { note: c.note.trim() }              : {}),
       }));
 
       const ref = await addDoc(collection(db, 'basho'), {
@@ -142,10 +143,10 @@ export default function HomePage() {
         <div style={{ marginBottom: 32, textAlign: 'center' }}>
           <span className="tag" style={{ marginBottom: 12, display: 'inline-block' }}>場所投票ツール</span>
           <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 8 }}>
-            飲み会の場所を、<br />みんなで決めよう。
+            行き先を、<br />みんなで決めよう。
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: 15 }}>
-            候補のお店を登録してURLをシェア。みんなの「行きたい」を集めます。
+            候補の場所を登録してURLをシェア。みんなの「行きたい」を集めます。
           </p>
         </div>
 
@@ -192,7 +193,7 @@ export default function HomePage() {
 
           <div className="card">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <p className="section-title" style={{ marginBottom: 0 }}>候補のお店</p>
+              <p className="section-title" style={{ marginBottom: 0 }}>候補の場所</p>
               {user && (
                 <button
                   type="button"
@@ -204,7 +205,7 @@ export default function HomePage() {
               )}
             </div>
 
-            {noShopsError && <p className="error-msg" style={{ marginBottom: 12 }}>お店を1件以上追加してください</p>}
+            {noShopsError && <p className="error-msg" style={{ marginBottom: 12 }}>場所を1件以上追加してください</p>}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {candidates.map((c, i) => (
@@ -219,10 +220,10 @@ export default function HomePage() {
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                     <div>
-                      <label>店名 <span style={{ color: 'var(--red)' }}>*</span></label>
+                      <label>場所名 <span style={{ color: 'var(--red)' }}>*</span></label>
                       <input
                         type="text"
-                        placeholder="例：焼き鳥 鳥一"
+                        placeholder="例：焼き鳥 鳥一、渋谷 ボウリング場"
                         value={c.name}
                         onChange={e => updateCandidate(c._id, 'name', e.target.value)}
                       />
@@ -245,6 +246,15 @@ export default function HomePage() {
                         onChange={e => updateCandidate(c._id, 'mapsUrl', e.target.value)}
                       />
                     </div>
+                    <div>
+                      <label>備考（任意）</label>
+                      <input
+                        type="text"
+                        placeholder="例：予算3,000円、駅から徒歩5分"
+                        value={c.note ?? ''}
+                        onChange={e => updateCandidate(c._id, 'note', e.target.value)}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -256,7 +266,7 @@ export default function HomePage() {
               style={{ marginTop: 16, width: '100%' }}
               onClick={addCandidate}
             >
-              ＋ お店を追加
+              ＋ 場所を追加
             </button>
           </div>
 

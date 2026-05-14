@@ -9,8 +9,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'FLOW BASHO — 飲み会の場所を投票で決めよう',
-  description: 'URLを共有するだけ。みんなの「行きたい」を集めてお店を決める場所投票ツール。',
+  title: 'FLOW BASHO — 行き先をみんなで投票で決めよう',
+  description: 'URLを共有するだけ。みんなの「行きたい」を集めて場所を決める投票ツール。',
 };
 
 export default function RootLayout({
