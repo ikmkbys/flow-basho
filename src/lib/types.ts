@@ -14,6 +14,7 @@ export interface BashoEvent {
   creatorName: string;
   creatorUid?: string;
   deadline?: string;
+  yoteiUrl?: string;
   createdAt: Timestamp;
   candidates: Candidate[];
 }

@@ -27,6 +27,7 @@ export default function HomePage() {
   const [title, setTitle]           = useState('');
   const [creatorName, setCreatorName] = useState('');
   const [deadline, setDeadline]     = useState('');
+  const [yoteiUrl, setYoteiUrl]     = useState('');
   const [candidates, setCandidates] = useState<CandidateForm[]>([emptyCandidate(), emptyCandidate()]);
   const [submitting, setSubmitting] = useState(false);
   const [attempted, setAttempted]   = useState(false);
@@ -87,6 +88,7 @@ export default function HomePage() {
         creatorName: creatorName.trim(),
         ...(user ? { creatorUid: user.uid } : {}),
         ...(deadline ? { deadline } : {}),
+        ...(yoteiUrl.trim() ? { yoteiUrl: yoteiUrl.trim() } : {}),
         createdAt: Timestamp.now(),
         candidates: candidatesData,
       });
@@ -190,6 +192,18 @@ export default function HomePage() {
                 value={deadline}
                 onChange={e => setDeadline(e.target.value)}
               />
+            </div>
+
+            <div>
+              <label htmlFor="yotei-url">FLOW YOTEI URL（任意）</label>
+              <input
+                id="yotei-url"
+                type="url"
+                placeholder="https://flow-yotei.stellars-lab.com/..."
+                value={yoteiUrl}
+                onChange={e => setYoteiUrl(e.target.value)}
+              />
+              <p style={{ fontSize: 12, color: 'var(--muted)', marginTop: 4 }}>日程調整と場所決めを紐付けられます</p>
             </div>
           </div>
 

@@ -77,6 +77,7 @@ export default function BashoPage({ params }: Props) {
   const [showEventEdit, setShowEventEdit]     = useState(false);
   const [editTitle, setEditTitle]             = useState('');
   const [editDeadline, setEditDeadline]       = useState('');
+  const [editYoteiUrl, setEditYoteiUrl]       = useState('');
   const [eventEditSubmitting, setEventEditSubmitting] = useState(false);
 
   // localStorage から前回の投票IDを復元
@@ -266,6 +267,7 @@ export default function BashoPage({ params }: Props) {
     if (!event) return;
     setEditTitle(event.title);
     setEditDeadline(event.deadline ?? '');
+    setEditYoteiUrl(event.yoteiUrl ?? '');
     setShowEventEdit(true);
   };
 
@@ -278,6 +280,7 @@ export default function BashoPage({ params }: Props) {
       await updateDoc(doc(db, 'basho', id), {
         title: editTitle.trim(),
         deadline: editDeadline || null,
+        yoteiUrl: editYoteiUrl.trim() || null,
       });
       setShowEventEdit(false);
     } finally {
@@ -354,6 +357,16 @@ export default function BashoPage({ params }: Props) {
                   <>　·　締切: {new Date(event.deadline).toLocaleString('ja-JP', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</>
                 )}
               </p>
+              {event.yoteiUrl && (
+                <a
+                  href={safeUrl(event.yoteiUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontSize: 13, color: 'var(--indigo)', marginTop: 4, display: 'inline-block' }}
+                >
+                  📅 日程調整はこちら（FLOW YOTEI）↗
+                </a>
+              )}
             </div>
             <button type="button" className="btn btn-secondary btn-sm" onClick={startEditEvent} style={{ flexShrink: 0 }}>
               ✏️ 編集
@@ -369,6 +382,10 @@ export default function BashoPage({ params }: Props) {
             <div style={{ marginBottom: 14 }}>
               <label>締切（任意）</label>
               <input type="datetime-local" value={editDeadline} onChange={e => setEditDeadline(e.target.value)} />
+            </div>
+            <div style={{ marginBottom: 14 }}>
+              <label>FLOW YOTEI URL（任意）</label>
+              <input type="url" placeholder="https://flow-yotei.stellars-lab.com/..." value={editYoteiUrl} onChange={e => setEditYoteiUrl(e.target.value)} />
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button type="submit" className="btn btn-primary btn-sm" disabled={eventEditSubmitting} style={{ justifyContent: 'center' }}>
