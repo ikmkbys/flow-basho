@@ -291,6 +291,16 @@ export default function BashoPage({ params }: Props) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const shareEvent = () => {
+    const url = window.location.href;
+    const text = event ? `「${event.title}」の場所候補 - FLOW BASHO` : 'FLOW BASHO';
+    if (navigator.share) {
+      navigator.share({ title: event?.title ?? 'FLOW BASHO', text, url }).catch(() => {});
+    } else {
+      copyUrl();
+    }
+  };
+
   const tally = (candidateId: string): Record<VoteValue, number> => {
     return { want: 0, ok: 0, pass: 0, ...Object.fromEntries(
       (['want', 'ok', 'pass'] as VoteValue[]).map(v => [
@@ -324,6 +334,8 @@ export default function BashoPage({ params }: Props) {
               日程調整はYOTEI
             </a>
             <Link href="/my-shops" className="btn btn-ghost btn-sm" style={{ fontSize: 13 }}>📚 ライブラリ</Link>
+            <Link href="/help" className="btn btn-ghost btn-sm" style={{ fontSize: 13 }}>？ 使い方</Link>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={shareEvent} style={{ fontSize: 13 }}>共有</button>
             <AuthButton />
           </div>
         </div>

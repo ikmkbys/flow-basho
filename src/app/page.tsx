@@ -135,6 +135,7 @@ export default function HomePage() {
               日程調整はYOTEI
             </a>
             <Link href="/my-shops" className="btn btn-ghost btn-sm" style={{ fontSize: 13 }}>📚 ライブラリ</Link>
+            <Link href="/help" className="btn btn-ghost btn-sm" style={{ fontSize: 13 }}>？ 使い方</Link>
             <AuthButton />
           </div>
         </div>
