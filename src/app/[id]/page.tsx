@@ -37,10 +37,11 @@ export default function BashoPage({ params }: Props) {
   // 投票フォーム
   const [respName, setRespName]     = useState('');
   const [votes, setVotes]           = useState<Record<string, VoteValue>>({});
-  const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted]   = useState(false);
-  const [attempted, setAttempted]   = useState(false);
-  const [copied, setCopied]         = useState(false);
+  const [submitting, setSubmitting]   = useState(false);
+  const [submitted, setSubmitted]     = useState(false);
+  const [myResponseId, setMyResponseId] = useState<string | null>(null);
+  const [attempted, setAttempted]     = useState(false);
+  const [copied, setCopied]           = useState(false);
 
   // お店追加フォーム
   const [showAddForm, setShowAddForm]     = useState(false);
@@ -85,7 +86,7 @@ export default function BashoPage({ params }: Props) {
     setVotes(prev => ({ ...prev, [candidateId]: value }));
   }, []);
 
-  // 投票送信
+  // 投票送信（新規 or 修正）
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAttempted(true);
@@ -94,15 +95,29 @@ export default function BashoPage({ params }: Props) {
 
     setSubmitting(true);
     try {
-      await addDoc(collection(db, 'basho', id, 'responses'), {
-        respondentName: respName.trim(),
-        votes,
-        answeredAt: Timestamp.now(),
-      });
+      if (myResponseId) {
+        await updateDoc(doc(db, 'basho', id, 'responses', myResponseId), {
+          respondentName: respName.trim(),
+          votes,
+          answeredAt: Timestamp.now(),
+        });
+      } else {
+        const ref = await addDoc(collection(db, 'basho', id, 'responses'), {
+          respondentName: respName.trim(),
+          votes,
+          answeredAt: Timestamp.now(),
+        });
+        setMyResponseId(ref.id);
+      }
       setSubmitted(true);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleEditMyVote = () => {
+    setSubmitted(false);
+    setAttempted(false);
   };
 
   // お店追加
@@ -417,8 +432,13 @@ export default function BashoPage({ params }: Props) {
         {submitted && (
           <div className="card" style={{ marginBottom: 28, textAlign: 'center' }}>
             <p style={{ fontSize: 32, marginBottom: 8 }}>🎉</p>
-            <p style={{ fontWeight: 700, marginBottom: 4 }}>投票ありがとうございます！</p>
-            <p style={{ fontSize: 13, color: 'var(--muted)' }}>下の集計でみんなの結果を確認できます</p>
+            <p style={{ fontWeight: 700, marginBottom: 4 }}>
+              {myResponseId ? '投票を修正しました！' : '投票ありがとうございます！'}
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 16 }}>下の集計でみんなの結果を確認できます</p>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={handleEditMyVote} style={{ margin: '0 auto' }}>
+              ✏️ 投票を修正する
+            </button>
           </div>
         )}
 
