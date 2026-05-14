@@ -237,7 +237,7 @@ export default function HomePage() {
           <button
             type="submit"
             className="btn btn-primary"
-            style={{ marginTop: 28, width: '100%', padding: '14px 0', fontSize: 16 }}
+            style={{ marginTop: 28, width: '100%', padding: '14px 0', fontSize: 16, justifyContent: 'center' }}
             disabled={submitting}
           >
             {submitting ? '作成中…' : '投票ページを作成する'}
