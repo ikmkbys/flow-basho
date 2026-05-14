@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <>
       <header>
         <div className="header-inner">
-          <Link href="/" className="logo">🍻 FLOW BASHO</Link>
+          <Link href="/" className="logo">FLOW BASHO<span>.</span></Link>
         </div>
       </header>
 

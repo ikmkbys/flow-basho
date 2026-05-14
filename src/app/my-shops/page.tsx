@@ -40,7 +40,7 @@ export default function MyShopsPage() {
     <>
       <header>
         <div className="header-inner">
-          <Link href="/" className="logo">🍻 FLOW BASHO</Link>
+          <Link href="/" className="logo">FLOW BASHO<span>.</span></Link>
           <div style={{ marginLeft: 'auto' }}>
             <AuthButton />
           </div>
