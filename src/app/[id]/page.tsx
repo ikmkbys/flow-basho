@@ -45,6 +45,7 @@ export default function BashoPage({ params }: Props) {
   // 投票フォーム
   const [respName, setRespName]     = useState('');
   const [votes, setVotes]           = useState<Record<string, VoteValue>>({});
+  const [topPick, setTopPick]       = useState<string>('');
   const [submitting, setSubmitting]   = useState(false);
   const [submitted, setSubmitted]     = useState(false);
   const [myResponseId, setMyResponseId] = useState<string | null>(null);
@@ -126,6 +127,7 @@ export default function BashoPage({ params }: Props) {
     if (event.candidates.some(c => !myResp.votes[c.id])) {
       setRespName(myResp.respondentName);
       setVotes(myResp.votes);
+      setTopPick(myResp.topPick ?? '');
       setSubmitted(false);
     }
   }, [submitted, myResponseId, event, responses]);
@@ -148,12 +150,14 @@ export default function BashoPage({ params }: Props) {
         await updateDoc(doc(db, 'basho', id, 'responses', myResponseId), {
           respondentName: respName.trim(),
           votes,
+          topPick: topPick || null,
           answeredAt: Timestamp.now(),
         });
       } else {
         const ref = await addDoc(collection(db, 'basho', id, 'responses'), {
           respondentName: respName.trim(),
           votes,
+          topPick: topPick || null,
           answeredAt: Timestamp.now(),
         });
         setMyResponseId(ref.id);
@@ -172,6 +176,7 @@ export default function BashoPage({ params }: Props) {
       if (myResp) {
         setRespName(myResp.respondentName);
         setVotes(myResp.votes);
+        setTopPick(myResp.topPick ?? '');
       }
     }
     setSubmitted(false);
@@ -311,6 +316,17 @@ export default function BashoPage({ params }: Props) {
       ]),
     ) } as Record<VoteValue, number>;
   };
+
+  const topPickCount = (candidateId: string) =>
+    responses.filter(r => r.topPick === candidateId).length;
+
+  const sortedCandidates = event
+    ? [...event.candidates].sort((a, b) => {
+        const wa = tally(a.id).want, wb = tally(b.id).want;
+        if (wb !== wa) return wb - wa;
+        return topPickCount(b.id) - topPickCount(a.id);
+      })
+    : [];
 
   if (loading) return (
     <div style={{ textAlign: 'center', paddingTop: 80, color: 'var(--muted)' }}>読み込み中…</div>
@@ -562,6 +578,29 @@ export default function BashoPage({ params }: Props) {
 
               {voteError && <p className="error-msg" style={{ marginTop: 12 }}>全候補に投票してください</p>}
 
+              <div style={{ marginTop: 20, padding: '14px 16px', background: 'var(--bg2)', borderRadius: 10 }}>
+                <p style={{ fontWeight: 700, fontSize: 14, marginBottom: 10 }}>🏆 イチ推しは？<span style={{ fontWeight: 400, fontSize: 12, color: 'var(--muted)', marginLeft: 6 }}>任意・1つだけ</span></p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {event.candidates.map(c => (
+                    <label key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
+                      <input
+                        type="radio"
+                        name="topPick"
+                        value={c.id}
+                        checked={topPick === c.id}
+                        onChange={() => setTopPick(c.id)}
+                      />
+                      {c.name}
+                    </label>
+                  ))}
+                  {topPick && (
+                    <button type="button" onClick={() => setTopPick('')} className="btn btn-ghost btn-sm" style={{ alignSelf: 'flex-start', fontSize: 12, color: 'var(--muted)' }}>
+                      選択を解除
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <button
                 type="submit"
                 className="btn btn-primary"
@@ -599,15 +638,19 @@ export default function BashoPage({ params }: Props) {
             <p className="section-title" style={{ marginBottom: 16 }}>集計結果 ({responses.length}人回答)</p>
 
             <div style={{ display: 'flex', gap: 10, marginBottom: 20, flexWrap: 'wrap' }}>
-              {event.candidates.map(c => {
+              {sortedCandidates.map((c, i) => {
                 const t = tally(c.id);
+                const tp = topPickCount(c.id);
                 return (
-                  <div key={c.id} style={{ border: '1.5px solid var(--border)', borderRadius: 10, padding: '10px 14px', minWidth: 120 }}>
-                    <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>{c.name}</p>
+                  <div key={c.id} style={{ border: `1.5px solid ${i === 0 && responses.length > 0 ? 'var(--indigo)' : 'var(--border)'}`, borderRadius: 10, padding: '10px 14px', minWidth: 120 }}>
+                    <p style={{ fontWeight: 700, fontSize: 13, marginBottom: 6 }}>
+                      {i === 0 && responses.length > 0 && <span style={{ marginRight: 4 }}>🥇</span>}{c.name}
+                    </p>
                     <div style={{ display: 'flex', gap: 6, fontSize: 13 }}>
                       <span>🙆 {t.want}</span>
                       <span>🤔 {t.ok}</span>
                       <span>🙅 {t.pass}</span>
+                      {tp > 0 && <span style={{ color: 'var(--indigo)', fontWeight: 600 }}>🏆 {tp}</span>}
                     </div>
                   </div>
                 );
@@ -620,6 +663,7 @@ export default function BashoPage({ params }: Props) {
                   <tr>
                     <th style={{ textAlign: 'left' }}>名前</th>
                     {event.candidates.map(c => <th key={c.id}>{c.name}</th>)}
+                    <th>🏆</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -646,6 +690,9 @@ export default function BashoPage({ params }: Props) {
                           </td>
                         );
                       })}
+                      <td style={{ fontWeight: 600, fontSize: 13 }}>
+                        {r.topPick ? (event.candidates.find(c => c.id === r.topPick)?.name ?? '—') : '—'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

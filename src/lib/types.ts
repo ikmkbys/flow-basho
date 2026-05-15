@@ -25,6 +25,7 @@ export interface VoteResponse {
   id: string;
   respondentName: string;
   votes: Record<string, VoteValue>;
+  topPick?: string;   // candidateId
   answeredAt: Timestamp;
 }
 
