@@ -661,38 +661,37 @@ export default function BashoPage({ params }: Props) {
               <table className="result-table">
                 <thead>
                   <tr>
-                    <th style={{ textAlign: 'left' }}>名前</th>
-                    {event.candidates.map(c => <th key={c.id}>{c.name}</th>)}
-                    <th>🏆</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {responses.map(r => (
-                    <tr key={r.id}>
-                      <td style={{ textAlign: 'left', fontWeight: 600 }}>
-                        <span>{r.respondentName}</span>
+                    <th style={{ textAlign: 'left' }}>場所</th>
+                    {responses.map(r => (
+                      <th key={r.id}>
+                        {r.respondentName}
                         {r.id === myResponseId && (
                           <button
                             type="button"
                             className="btn btn-ghost btn-sm"
                             onClick={handleEditMyVote}
-                            style={{ marginLeft: 6, fontSize: 11, padding: '1px 6px', color: 'var(--indigo)' }}
+                            style={{ display: 'block', margin: '2px auto 0', fontSize: 10, padding: '1px 4px', color: 'var(--indigo)' }}
                           >
                             訂正
                           </button>
                         )}
-                      </td>
-                      {event.candidates.map(c => {
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedCandidates.map(c => (
+                    <tr key={c.id}>
+                      <td style={{ textAlign: 'left', fontWeight: 600 }}>{c.name}</td>
+                      {responses.map(r => {
                         const v = r.votes[c.id] as VoteValue | undefined;
+                        const isTop = r.topPick === c.id;
                         return (
-                          <td key={c.id} className={v ? CELL_CLASS[v] : ''}>
-                            {v ? VOTE_LABELS[v] : '—'}
+                          <td key={r.id} className={v ? CELL_CLASS[v] : ''}>
+                            {v ? VOTE_LABELS[v] : '—'}{isTop && ' 🏆'}
                           </td>
                         );
                       })}
-                      <td style={{ fontWeight: 600, fontSize: 13 }}>
-                        {r.topPick ? (event.candidates.find(c => c.id === r.topPick)?.name ?? '—') : '—'}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
